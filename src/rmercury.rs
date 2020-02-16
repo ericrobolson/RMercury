@@ -1,16 +1,15 @@
 use crate::rbackend;
 use rbackend::RBackend;
 
+use crate::rpeer2peer;
+use crate::rspectator;
+use crate::rsynctest;
+
 use crate::rsystem;
 use rsystem::{RErrorCode, RGame, RNetworkStats, RPlayer, RPlayerHandle};
 
-//TODO: spectation
-//TODO: sync test
-
 pub trait RSession {
     fn add_player(&mut self, player: RPlayer, player_handle: RPlayerHandle) -> RErrorCode;
-
-    //TODO: start synctest
     //TODO: logging?
 
     fn set_frame_delay(&mut self, player_handle: RPlayerHandle, frame_delay: i32) -> RErrorCode;
@@ -37,14 +36,54 @@ pub trait RSession {
     fn set_disconnect_notify_start(&mut self, timeout: i32) -> RErrorCode;
 }
 
+pub fn rmercury_start_synctest(
+    r_game: impl RGame,
+    app_name: String,
+    num_players: u8,
+    input_size: i32,
+    frames: i32,
+) -> RMercury<rsynctest::SyncTest> {
+    let backend = rsynctest::SyncTest::new(r_game, app_name, num_players, input_size, frames);
+
+    return RMercury {
+        backend: backend,
+        is_closed: false,
+    };
+}
+
+pub fn rmercury_start_spectator(
+    r_game: impl RGame,
+    app_name: String,
+    num_players: u8,
+    input_size: i32,
+    localport: u8,
+    host_ip: String,
+    host_port: u8,
+) -> RMercury<rspectator::SpectatorBackend> {
+    let backend = rspectator::SpectatorBackend::new(
+        r_game,
+        app_name,
+        num_players,
+        input_size,
+        localport,
+        host_ip,
+        host_port,
+    );
+
+    return RMercury {
+        backend: backend,
+        is_closed: false,
+    };
+}
+
 pub fn rmercury_start_session(
     r_game: impl RGame,
     app_name: String,
     num_players: u8,
     input_size: i32,
     localport: u8,
-) -> RMercury<rbackend::Peer2Peer> {
-    let backend = rbackend::Peer2Peer::new(r_game, app_name, num_players, input_size, localport);
+) -> RMercury<rpeer2peer::Peer2Peer> {
+    let backend = rpeer2peer::Peer2Peer::new(r_game, app_name, num_players, input_size, localport);
 
     return RMercury {
         backend: backend,
