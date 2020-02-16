@@ -1,9 +1,10 @@
+use crate::backends;
+use backends::RBackend;
+
 pub const RMAXPLAYERS: u8 = 4;
 pub const RMAXPREDICTIONFRAMES: u8 = 8;
 pub const RMAXSPECTATORS: u8 = 32;
 pub const RSPECTATORINPUTINTERVAL: u8 = 4;
-
-pub struct RSession {}
 
 pub type RPort = u8;
 pub type RIpAddress = String;
@@ -27,6 +28,7 @@ pub struct RLocalEndpoint {
     pub player_number: RPlayerNumber,
 }
 
+#[derive(Debug, PartialEq)]
 pub enum RErrorCode {
     Ok,
     Success,
@@ -60,3 +62,16 @@ pub struct REvent {
     pub code: REventCode,
     pub connected: Option<RPlayerHandle>,
 }
+
+/// Trait your simulation must implement
+pub trait RGame {
+    fn begin_game() -> bool;
+    fn save_game_state() -> bool;
+    fn load_game_state() -> bool;
+    fn log_game_state() -> bool;
+    fn free_buffer();
+    fn advance_frame() -> bool;
+    fn on_event() -> bool;
+}
+
+pub struct RNetworkStats {}
