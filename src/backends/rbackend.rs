@@ -1,5 +1,5 @@
 use crate::rsystem;
-use rsystem::{RErrorCode, RGame, RPlayer, RPlayerHandle};
+use rsystem::{RErrorCode, RPlayer, RPlayerHandle};
 
 pub trait RBackend {
     /// virtual GGPOErrorCode DoPoll(int timeout) { return GGPO_OK; }

@@ -1,7 +1,10 @@
-use crate::rsystem;
-use rsystem::{RErrorCode, RGame, RPlayer, RPlayerHandle};
-
 use super::*;
+
+use crate::rsystem;
+use rsystem::{RErrorCode, RPlayerHandle};
+
+use crate::rgame;
+use rgame::RGame;
 
 pub struct SyncTest {}
 

@@ -63,15 +63,4 @@ pub struct REvent {
     pub connected: Option<RPlayerHandle>,
 }
 
-/// Trait your simulation must implement
-pub trait RGame {
-    fn begin_game() -> bool;
-    fn save_game_state() -> bool;
-    fn load_game_state() -> bool;
-    fn log_game_state() -> bool;
-    fn free_buffer();
-    fn advance_frame() -> bool;
-    fn on_event() -> bool;
-}
-
 pub struct RNetworkStats {}

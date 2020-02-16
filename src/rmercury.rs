@@ -2,7 +2,10 @@ use crate::backends;
 use backends::{Peer2Peer, RBackend, SpectatorBackend, SyncTest};
 
 use crate::rsystem;
-use rsystem::{RErrorCode, RGame, RNetworkStats, RPlayer, RPlayerHandle};
+use rsystem::{RErrorCode, RNetworkStats, RPlayer, RPlayerHandle};
+
+use crate::rgame;
+use rgame::RGame;
 
 pub trait RSession {
     fn add_player(&mut self, player: RPlayer, player_handle: RPlayerHandle) -> RErrorCode;
