@@ -1,8 +1,7 @@
 use crate::rsystem;
 use rsystem::{RErrorCode, RGame, RPlayer, RPlayerHandle};
 
-use crate::rbackend;
-use rbackend::RBackend;
+use super::*;
 
 pub struct SpectatorBackend {}
 

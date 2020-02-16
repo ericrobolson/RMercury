@@ -1,9 +1,5 @@
-use crate::rbackend;
-use rbackend::RBackend;
-
-use crate::rpeer2peer;
-use crate::rspectator;
-use crate::rsynctest;
+use crate::backends;
+use backends::{Peer2Peer, RBackend, SpectatorBackend, SyncTest};
 
 use crate::rsystem;
 use rsystem::{RErrorCode, RGame, RNetworkStats, RPlayer, RPlayerHandle};
@@ -42,8 +38,8 @@ pub fn rmercury_start_synctest(
     num_players: u8,
     input_size: i32,
     frames: i32,
-) -> RMercury<rsynctest::SyncTest> {
-    let backend = rsynctest::SyncTest::new(r_game, app_name, num_players, input_size, frames);
+) -> RMercury<SyncTest> {
+    let backend = SyncTest::new(r_game, app_name, num_players, input_size, frames);
 
     return RMercury {
         backend: backend,
@@ -59,8 +55,8 @@ pub fn rmercury_start_spectator(
     localport: u8,
     host_ip: String,
     host_port: u8,
-) -> RMercury<rspectator::SpectatorBackend> {
-    let backend = rspectator::SpectatorBackend::new(
+) -> RMercury<SpectatorBackend> {
+    let backend = SpectatorBackend::new(
         r_game,
         app_name,
         num_players,
@@ -82,8 +78,8 @@ pub fn rmercury_start_session(
     num_players: u8,
     input_size: i32,
     localport: u8,
-) -> RMercury<rpeer2peer::Peer2Peer> {
-    let backend = rpeer2peer::Peer2Peer::new(r_game, app_name, num_players, input_size, localport);
+) -> RMercury<Peer2Peer> {
+    let backend = Peer2Peer::new(r_game, app_name, num_players, input_size, localport);
 
     return RMercury {
         backend: backend,
@@ -91,7 +87,7 @@ pub fn rmercury_start_session(
     };
 }
 
-pub struct RMercury<TBackend: rbackend::RBackend> {
+pub struct RMercury<TBackend: RBackend> {
     pub backend: TBackend,
     pub is_closed: bool,
 }
