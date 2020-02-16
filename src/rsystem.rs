@@ -72,92 +72,102 @@ pub trait RGame {
     fn on_event() -> bool;
 }
 
-pub trait RSession {
-    fn start_session(
-        r_game: impl RGame,
-        app_name: String,
-        num_players: u8,
-        input_size: i32,
-        localport: u8,
-    ) -> Self;
+pub struct RNetworkStats {}
 
+pub trait RSession {
     fn add_player(&mut self, player: RPlayer, player_handle: RPlayerHandle) -> RErrorCode;
+
+    //TODO: start synctest
+    //TODO: logging?
+
+    fn set_frame_delay(&mut self, player_handle: RPlayerHandle, frame_delay: i32) -> RErrorCode;
+
+    fn idle(&mut self, timeout: i32) -> RErrorCode;
+
+    fn add_local_input(&mut self, player_handle: RPlayerHandle) -> RErrorCode;
+
+    fn synchronize_input(&mut self) -> RErrorCode;
+
+    fn advance_frame(&mut self) -> RErrorCode;
+
+    fn client_chat(&mut self, text: String) -> RErrorCode;
+
+    fn get_network_stats(
+        &self,
+        player_handle: RPlayerHandle,
+    ) -> (RErrorCode, Option<RNetworkStats>);
+
+    fn close_session(&mut self) -> RErrorCode;
+
+    fn set_disconnect_timeout(&mut self, timeout: i32) -> RErrorCode;
+
+    fn set_disconnect_notify_start(&mut self, timeout: i32) -> RErrorCode;
 }
 
 pub struct RMercury<TBackend: rbackend::RBackend> {
     pub backend: TBackend,
 }
 
-impl RSession for RMercury<rbackend::Peer2Peer> {
-    fn start_session(
-        r_game: impl RGame,
-        app_name: String,
-        num_players: u8,
-        input_size: i32,
-        localport: u8,
-    ) -> Self {
-        let mut backend =
-            rbackend::Peer2Peer::new(r_game, app_name, num_players, input_size, localport);
+pub fn RMercury_StartSession(
+    r_game: impl RGame,
+    app_name: String,
+    num_players: u8,
+    input_size: i32,
+    localport: u8,
+) -> RMercury<rbackend::Peer2Peer> {
+    let backend = rbackend::Peer2Peer::new(r_game, app_name, num_players, input_size, localport);
 
-        return Self { backend: backend };
-    }
+    return RMercury { backend: backend };
+}
 
+impl<T> RSession for RMercury<T>
+where
+    T: RBackend,
+{
     fn add_player(&mut self, player: RPlayer, player_handle: RPlayerHandle) -> RErrorCode {
         return self.backend.AddPlayer(player, player_handle);
     }
-}
-/*
-impl RMercury {
-    pub fn start_synctest() -> RErrorCode {
-        panic!();
+
+    fn set_frame_delay(&mut self, player_handle: RPlayerHandle, frame_delay: i32) -> RErrorCode {
+        return self.backend.SetFrameDelay(player_handle, frame_delay);
     }
 
-    pub fn start_spectation() -> RErrorCode {
-        panic!();
+    fn idle(&mut self, timeout: i32) -> RErrorCode {
+        return self.backend.DoPoll(timeout);
     }
 
-    pub fn close_session() -> RErrorCode {
-        panic!();
+    fn add_local_input(&mut self, player_handle: RPlayerHandle) -> RErrorCode {
+        return self.backend.AddLocalInput(player_handle);
     }
 
-    pub fn set_frame_delay() -> RErrorCode {
-        panic!();
+    fn synchronize_input(&mut self) -> RErrorCode {
+        return self.backend.SyncInput();
     }
 
-    pub fn idle() -> RErrorCode {
-        panic!();
+    fn advance_frame(&mut self) -> RErrorCode {
+        return self.backend.IncrementFrame();
     }
 
-    pub fn add_local_input() -> RErrorCode {
-        panic!();
+    fn client_chat(&mut self, text: String) -> RErrorCode {
+        return self.backend.Chat(text);
     }
 
-    pub fn synchronize_input() -> RErrorCode {
-        panic!();
+    fn get_network_stats(
+        &self,
+        player_handle: RPlayerHandle,
+    ) -> (RErrorCode, Option<RNetworkStats>) {
+        return self.backend.GetNetworkStats(player_handle);
     }
 
-    pub fn disconnect_player() -> RErrorCode {
-        panic!();
+    fn close_session(&mut self) -> RErrorCode {
+        return self.backend.CloseSession();
     }
 
-    pub fn advance_frame() -> RErrorCode {
-        panic!();
+    fn set_disconnect_timeout(&mut self, timeout: i32) -> RErrorCode {
+        return self.backend.SetDisconnectTimeout(timeout);
     }
 
-    pub fn get_nework_stats() -> RErrorCode {
-        panic!();
-    }
-
-    pub fn set_disconnect_timeout() -> RErrorCode {
-        panic!();
-    }
-
-    pub fn set_disconnect_notify_start() -> RErrorCode {
-        panic!();
-    }
-
-    pub fn log() -> RErrorCode {
-        panic!();
+    fn set_disconnect_notify_start(&mut self, timeout: i32) -> RErrorCode {
+        return self.backend.SetDisconnectNotifyStart(timeout);
     }
 }
-*/

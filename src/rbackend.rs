@@ -7,23 +7,28 @@ pub trait RBackend {
     /// virtual GGPOErrorCode AddPlayer(GGPOPlayer *player, GGPOPlayerHandle *handle) = 0;
     fn AddPlayer(&mut self, player: RPlayer, player_handle: RPlayerHandle) -> RErrorCode;
     /// virtual GGPOErrorCode AddLocalInput(GGPOPlayerHandle player, void *values, int size) = 0;
-    fn AddLocalInput(player_handle: RPlayerHandle) -> RErrorCode;
+    fn AddLocalInput(&mut self, player_handle: RPlayerHandle) -> RErrorCode;
     /// virtual GGPOErrorCode SyncInput(void *values, int size, int *disconnect_flags) = 0;
-    fn SyncInput() -> RErrorCode;
+    fn SyncInput(&mut self) -> RErrorCode;
     /// virtual GGPOErrorCode IncrementFrame(void) { return GGPO_OK; }
-    fn IncrementFrame() -> RErrorCode;
+    fn IncrementFrame(&mut self) -> RErrorCode;
     /// virtual GGPOErrorCode Chat(char *text) { return GGPO_OK; }
-    fn Chat(text: String) -> RErrorCode;
+    fn Chat(&mut self, text: String) -> RErrorCode;
     /// virtual GGPOErrorCode DisconnectPlayer(GGPOPlayerHandle handle) { return GGPO_OK; }
     fn DisconnectPlayer(player_handle: RPlayerHandle) -> RErrorCode;
     /// virtual GGPOErrorCode GetNetworkStats(GGPONetworkStats *stats, GGPOPlayerHandle handle) { return GGPO_OK; }
-    fn GetNetworkStats() -> RErrorCode;
+    fn GetNetworkStats(
+        &self,
+        player_handle: RPlayerHandle,
+    ) -> (RErrorCode, Option<rsystem::RNetworkStats>);
     /// virtual GGPOErrorCode SetFrameDelay(GGPOPlayerHandle player, int delay) { return GGPO_ERRORCODE_UNSUPPORTED; }
-    fn SetFrameDelay() -> RErrorCode;
+    fn SetFrameDelay(&mut self, player_handle: RPlayerHandle, frame_delay: i32) -> RErrorCode;
     /// virtual GGPOErrorCode SetDisconnectTimeout(int timeout) { return GGPO_ERRORCODE_UNSUPPORTED; }
-    fn SetDisconnectTimeout() -> RErrorCode;
+    fn SetDisconnectTimeout(&mut self, timeout: i32) -> RErrorCode;
     /// virtual GGPOErrorCode SetDisconnectNotifyStart(int timeout) { return GGPO_ERRORCODE_UNSUPPORTED; }
-    fn SetDisconnectNotifyStart() -> RErrorCode;
+    fn SetDisconnectNotifyStart(&mut self, timeout: i32) -> RErrorCode;
+
+    fn CloseSession(&mut self) -> RErrorCode;
 }
 
 pub struct Peer2Peer {}
@@ -35,31 +40,43 @@ impl RBackend for Peer2Peer {
     fn AddPlayer(&mut self, _: rsystem::RPlayer, _: i32) -> rsystem::RErrorCode {
         unimplemented!()
     }
-    fn AddLocalInput(_: i32) -> rsystem::RErrorCode {
+    fn AddLocalInput(&mut self, _: i32) -> rsystem::RErrorCode {
         unimplemented!()
     }
-    fn SetDisconnectNotifyStart() -> rsystem::RErrorCode {
+    fn SyncInput(&mut self) -> rsystem::RErrorCode {
         unimplemented!()
     }
-    fn SyncInput() -> rsystem::RErrorCode {
+    fn IncrementFrame(&mut self) -> rsystem::RErrorCode {
         unimplemented!()
     }
-    fn IncrementFrame() -> rsystem::RErrorCode {
-        unimplemented!()
-    }
-    fn Chat(_: std::string::String) -> rsystem::RErrorCode {
+    fn Chat(&mut self, _: std::string::String) -> rsystem::RErrorCode {
         unimplemented!()
     }
     fn DisconnectPlayer(_: i32) -> rsystem::RErrorCode {
         unimplemented!()
     }
-    fn GetNetworkStats() -> rsystem::RErrorCode {
+    fn GetNetworkStats(
+        &self,
+        player_handle: RPlayerHandle,
+    ) -> (RErrorCode, Option<rsystem::RNetworkStats>) {
         unimplemented!()
     }
-    fn SetFrameDelay() -> rsystem::RErrorCode {
+    fn SetFrameDelay(
+        &mut self,
+        player_handle: RPlayerHandle,
+        frame_delay: i32,
+    ) -> rsystem::RErrorCode {
         unimplemented!()
     }
-    fn SetDisconnectTimeout() -> rsystem::RErrorCode {
+    fn SetDisconnectTimeout(&mut self, timeout: i32) -> rsystem::RErrorCode {
+        unimplemented!()
+    }
+
+    fn SetDisconnectNotifyStart(&mut self, timeout: i32) -> RErrorCode {
+        unimplemented!()
+    }
+
+    fn CloseSession(&mut self) -> rsystem::RErrorCode {
         unimplemented!()
     }
 }
