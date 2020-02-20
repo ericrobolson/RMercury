@@ -28,19 +28,19 @@ impl InputQueue {
     }
 
     pub fn get_last_confirmed_frame(&self) -> usize {
-        unimplemented!();
+        return self.last_added_frame;
     }
 
     pub fn get_first_incorrect_frame(&self) -> usize {
-        unimplemented!();
+        return self.first_incorrect_frame;
     }
 
     pub fn get_length(&self) -> usize {
-        unimplemented!();
+        return self.length;
     }
 
     pub fn set_frame_delay(&mut self, delay: usize) {
-        unimplemented!();
+        self.frame_delay = delay;
     }
 
     pub fn reset_prediction(&mut self, frame: usize) {
