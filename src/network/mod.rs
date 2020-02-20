@@ -1,4 +1,4 @@
-pub mod ringbuffer;
+pub mod bitvector;
 
 pub const MAX_UDP_ENDPOINTS: u8 = 16;
 pub const MAX_UDP_PACKET_SIZE: u16 = 4096;
