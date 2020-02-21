@@ -96,19 +96,22 @@ impl GameInput {
         return self.frame == NULL_FRAME;
     }
 
-    /// Returns the value at the given index
+    /// Returns the value at the given index.
     pub fn value(&self, i: usize) -> bool {
         return self.bits[i];
     }
 
+    /// Set the bit at the given index.
     pub fn set(&mut self, i: usize) {
         self.bits[i] = true;
     }
 
+    /// Clear the bit at the given index.
     pub fn clear(&mut self, i: usize) {
         self.bits[i] = false;
     }
 
+    /// Erase all bits.
     pub fn erase(&mut self) {
         self.bits = get_empty_bits(self.max_bytes);
     }
@@ -121,6 +124,7 @@ impl GameInput {
         unimplemented!();
     }
 
+    /// Return whether the inputs are equal. If bits_only is set, just compares the bits.
     pub fn equal(&self, input: &GameInput, bits_only: bool) -> bool {
         let frames_match = self.frame == input.frame;
         if !bits_only && !frames_match {
@@ -588,5 +592,149 @@ mod tests {
         let expected = true;
 
         assert_eq!(expected, actual);
+    }
+
+    // set tests
+    #[test]
+    fn game_input_set_index_2_sets_proper_value() {
+        let max_bytes = 5;
+        let max_players = 2;
+        let byte_size_of_all_input_for_all_players = 5;
+
+        let mut input = GameInput::new(
+            max_bytes,
+            max_players,
+            byte_size_of_all_input_for_all_players,
+        );
+
+        let i = 2;
+
+        input.set(i);
+
+        let actual = input.value(i);
+        let expected = true;
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn game_input_set_index_5_sets_proper_value() {
+        let max_bytes = 5;
+        let max_players = 2;
+        let byte_size_of_all_input_for_all_players = 5;
+
+        let mut input = GameInput::new(
+            max_bytes,
+            max_players,
+            byte_size_of_all_input_for_all_players,
+        );
+
+        let i = 5;
+
+        input.set(i);
+
+        let actual = input.value(i);
+        let expected = true;
+
+        assert_eq!(expected, actual);
+    }
+
+    // clear tests
+    #[test]
+    fn game_input_clear_index_2_clears_value() {
+        let max_bytes = 5;
+        let max_players = 2;
+        let byte_size_of_all_input_for_all_players = 5;
+
+        let mut input = GameInput::new(
+            max_bytes,
+            max_players,
+            byte_size_of_all_input_for_all_players,
+        );
+
+        let i = 2;
+        input.set(i);
+        input.clear(i);
+
+        let actual = input.value(i);
+        let expected = false;
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn game_input_clear_index_6_clears_value() {
+        let max_bytes = 5;
+        let max_players = 2;
+        let byte_size_of_all_input_for_all_players = 5;
+
+        let mut input = GameInput::new(
+            max_bytes,
+            max_players,
+            byte_size_of_all_input_for_all_players,
+        );
+
+        let i = 6;
+        input.set(i);
+        input.clear(i);
+
+        let actual = input.value(i);
+        let expected = false;
+
+        assert_eq!(expected, actual);
+    }
+
+    // erase tests
+    #[test]
+    fn game_input_erase_clears_all_input() {
+        let max_bytes = 5;
+        let max_players = 2;
+        let byte_size_of_all_input_for_all_players = 5;
+
+        let mut input = GameInput::new(
+            max_bytes,
+            max_players,
+            byte_size_of_all_input_for_all_players,
+        );
+
+        let frame = NULL_FRAME;
+        let bits = vec![true, false, false, false, true];
+
+        let mut expected_bits = get_empty_bits(max_bytes);
+
+        let byte_size_of_all_input_for_all_players = 5;
+        input.init(frame, Some(bits), byte_size_of_all_input_for_all_players);
+
+        input.erase();
+        let actual = input.bits;
+
+        assert_eq!(expected_bits, actual);
+    }
+
+    // equal tests
+    #[test]
+    fn game_input_equal() {
+        let max_bytes = 5;
+        let max_players = 2;
+        let byte_size_of_all_input_for_all_players = 5;
+
+        let mut input = GameInput::new(
+            max_bytes,
+            max_players,
+            byte_size_of_all_input_for_all_players,
+        );
+
+        let frame = NULL_FRAME;
+        let bits = vec![true, false, false, false, true];
+
+        let mut expected_bits = get_empty_bits(max_bytes);
+
+        let byte_size_of_all_input_for_all_players = 5;
+        input.init(frame, Some(bits), byte_size_of_all_input_for_all_players);
+
+        input.erase();
+        let actual = input.bits;
+
+        assert_eq!(true, false);
     }
 }
