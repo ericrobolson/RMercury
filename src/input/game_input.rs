@@ -7,6 +7,7 @@ use utility::pow;
 const NULL_FRAME: i32 = -1;
 const BITS_IN_BYTE: usize = 8;
 
+/// Byte array representing the game input.
 pub struct GameInput {
     max_bytes: usize,
     max_players: usize,
@@ -134,15 +135,15 @@ impl GameInput {
         let sizes_match = self.byte_size_of_all_input_for_all_players
             == input.byte_size_of_all_input_for_all_players;
 
-        if !sizes_match {
-            // SIZES DON'T MATCH
-        }
+        // if !sizes_match {
+        //    // SIZES DON'T MATCH
+        // }
 
         let bits_match = self.bits == input.bits;
 
-        if !bits_match {
-            // BITS DON"T MATCH
-        }
+        // if !bits_match {
+        //     // BITS DON"T MATCH
+        // }
 
         return (bits_only || frames_match) && sizes_match && bits_match;
     }
@@ -713,28 +714,120 @@ mod tests {
 
     // equal tests
     #[test]
-    fn game_input_equal() {
+    fn game_input_equal_bits_only_matches_returns_true() {
         let max_bytes = 5;
-        let max_players = 2;
         let byte_size_of_all_input_for_all_players = 5;
 
-        let mut input = GameInput::new(
-            max_bytes,
-            max_players,
-            byte_size_of_all_input_for_all_players,
-        );
+        let mut input1 = GameInput::new(max_bytes, 2, 4);
 
-        let frame = NULL_FRAME;
+        let mut input2 = GameInput::new(max_bytes, 3, 5);
+
         let bits = vec![true, false, false, false, true];
 
-        let mut expected_bits = get_empty_bits(max_bytes);
+        input1.init(
+            2,
+            Some(bits.clone()),
+            byte_size_of_all_input_for_all_players,
+        );
+        input2.init(3, Some(bits), byte_size_of_all_input_for_all_players);
 
+        assert_eq!(true, input1.equal(&input2, true));
+        assert_eq!(true, input2.equal(&input1, true));
+    }
+
+    #[test]
+    fn game_input_equal_bits_only_no_match_returns_false() {
+        let max_bytes = 5;
         let byte_size_of_all_input_for_all_players = 5;
-        input.init(frame, Some(bits), byte_size_of_all_input_for_all_players);
 
-        input.erase();
-        let actual = input.bits;
+        let mut input1 = GameInput::new(max_bytes, 2, 4);
 
-        assert_eq!(true, false);
+        let mut input2 = GameInput::new(max_bytes, 3, 5);
+
+        let bits1 = vec![true, false, false, false, true];
+        let bits2 = vec![true, true, false, false, true];
+
+        input1.init(2, Some(bits1), byte_size_of_all_input_for_all_players);
+        input2.init(3, Some(bits2), byte_size_of_all_input_for_all_players);
+
+        assert_eq!(false, input1.equal(&input2, true));
+        assert_eq!(false, input2.equal(&input1, true));
+    }
+
+    #[test]
+    fn game_input_equal_matches_returns_true() {
+        let max_bytes = 5;
+        let byte_size_of_all_input_for_all_players = 5;
+
+        let mut input1 = GameInput::new(max_bytes, 2, 5);
+        let mut input2 = GameInput::new(max_bytes, 3, 5);
+
+        let bits = vec![true, false, false, false, true];
+
+        input1.init(
+            2,
+            Some(bits.clone()),
+            byte_size_of_all_input_for_all_players,
+        );
+        input2.init(2, Some(bits), byte_size_of_all_input_for_all_players);
+
+        assert_eq!(true, input1.equal(&input2, false));
+        assert_eq!(true, input2.equal(&input1, false));
+    }
+
+    #[test]
+    fn game_input_equal_frames_dont_matches_returns_false() {
+        let max_bytes = 5;
+        let byte_size_of_all_input_for_all_players = 5;
+
+        let mut input1 = GameInput::new(max_bytes, 2, 5);
+        let mut input2 = GameInput::new(max_bytes, 3, 5);
+
+        let bits = vec![true, false, false, false, true];
+
+        input1.init(
+            2,
+            Some(bits.clone()),
+            byte_size_of_all_input_for_all_players,
+        );
+        input2.init(3, Some(bits), byte_size_of_all_input_for_all_players);
+
+        assert_eq!(false, input1.equal(&input2, false));
+        assert_eq!(false, input2.equal(&input1, false));
+    }
+
+    #[test]
+    fn game_input_equal_bits_dont_matches_returns_false() {
+        let max_bytes = 5;
+        let byte_size_of_all_input_for_all_players = 5;
+
+        let mut input1 = GameInput::new(max_bytes, 2, 5);
+        let mut input2 = GameInput::new(max_bytes, 3, 5);
+
+        let bits1 = vec![true, false, false, false, true];
+        let bits2 = vec![true, false, false, false, false];
+
+        input1.init(2, Some(bits1), byte_size_of_all_input_for_all_players);
+        input2.init(2, Some(bits2), byte_size_of_all_input_for_all_players);
+
+        assert_eq!(false, input1.equal(&input2, false));
+        assert_eq!(false, input2.equal(&input1, false));
+    }
+
+    #[test]
+    fn game_input_equal_sizes_dont_matches_returns_false() {
+        let max_bytes = 5;
+        let byte_size_of_all_input_for_all_players = 5;
+
+        let mut input1 = GameInput::new(max_bytes, 2, 5);
+        let mut input2 = GameInput::new(max_bytes, 3, 5);
+
+        let bits = vec![true, false, false, false, true];
+
+        input1.init(2, Some(bits.clone()), 4);
+        input2.init(3, Some(bits), 3);
+
+        assert_eq!(false, input1.equal(&input2, false));
+        assert_eq!(false, input2.equal(&input1, false));
     }
 }
