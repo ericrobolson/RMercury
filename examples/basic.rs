@@ -1,6 +1,39 @@
 extern crate sdl2;
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color, rect::Rect};
 
+extern crate rmercury;
+use rmercury::{MercuryType, RMercuryBuilder, RMercuryGameInterface, RMercuryInput};
+
+struct GameInterface {}
+
+impl GameInterface {
+    pub fn new() -> Self {
+        return Self {};
+    }
+}
+
+struct GameState {}
+
+impl RMercuryGameInterface<GameState, GameInput> for GameInterface {
+    fn current_game_state(&self) -> GameState {
+        unimplemented!()
+    }
+
+    fn advance_frame(&mut self, _: std::vec::Vec<GameInput>) {
+        unimplemented!()
+    }
+}
+
+struct GameInput {}
+impl RMercuryInput for GameInput {
+    fn to_bytes(&self) -> std::vec::Vec<u8> {
+        unimplemented!()
+    }
+    fn from_bytes(_: std::vec::Vec<u8>) -> Self {
+        unimplemented!()
+    }
+}
+
 fn main() {
     // Init SDL
     let sdl_context = sdl2::init().unwrap();
@@ -10,6 +43,14 @@ fn main() {
     let mut canvas = window.into_canvas().build().unwrap();
 
     let mut event_pump = sdl_context.event_pump().unwrap();
+
+    // Init RMercury
+    let game_interface = GameInterface::new();
+
+    let mut builder = RMercuryBuilder::<GameInterface, GameInput, GameState>::new(&game_interface)
+        .with_type(MercuryType::Peer2Peer);
+
+    let mut r_mercury = builder.build();
 
     'gameloop: loop {
         {
@@ -24,14 +65,20 @@ fn main() {
                 }
             }
 
-            render(&mut canvas); // NOTE: gfx/sound should be divorced from actual game processing
+            r_mercury.log_local_input(vec![]);
+
+            r_mercury.execute();
+
+            let current_state = r_mercury.get_game_state();
+
+            render(&mut canvas, &current_state); // NOTE: gfx/sound should be divorced from actual game processing
         }
     }
 
     // Cleanup
 }
 
-fn render(canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
+fn render(canvas: &mut sdl2::render::Canvas<sdl2::video::Window>, game_state: &GameState) {
     // Background color
     canvas.set_draw_color(Color::RGB(0, 0, 0));
     canvas.clear();
