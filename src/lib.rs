@@ -1,5 +1,4 @@
 mod backends;
-//mod bitvector;
 mod input;
 mod network;
 mod revent;

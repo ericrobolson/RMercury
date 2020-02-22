@@ -4,14 +4,13 @@ use network::bitvector::NIBBLE_SIZE;
 use crate::utility;
 use utility::pow;
 
-const NULL_FRAME: i32 = -1;
 const BITS_IN_BYTE: usize = 8;
 
 /// Byte array representing the game input.
 pub struct GameInput {
     max_bytes: usize,
     max_players: usize,
-    frame: i32,
+    pub frame: Option<usize>,
     byte_size_of_all_input_for_all_players: usize,
     bits: Vec<bool>,
 }
@@ -39,7 +38,7 @@ impl GameInput {
         return Self {
             max_bytes: max_bytes,
             max_players: max_players,
-            frame: 0,
+            frame: Some(0),
             byte_size_of_all_input_for_all_players: byte_size_of_all_input_for_all_players,
             bits: get_empty_bits(max_bytes),
         };
@@ -48,7 +47,7 @@ impl GameInput {
     /// Initialize a new frame. If the byte_size_of_all_input > max_bytes * max_players, will panic.
     pub fn init(
         &mut self,
-        frame: i32,
+        frame: Option<usize>,
         bits: Option<Vec<bool>>,
         byte_size_of_all_input_for_all_players: usize,
     ) {
@@ -71,7 +70,7 @@ impl GameInput {
     /// Initialize a new frame with an offset. If the byte_size_of_all_input > max_bytes, will panic.
     pub fn init_offset(
         &mut self,
-        frame: i32,
+        frame: Option<usize>,
         bits: Option<Vec<bool>>,
         byte_size_of_all_input_for_all_players: usize,
         offset: usize,
@@ -94,7 +93,7 @@ impl GameInput {
 
     /// Check whether the given frame is null or not.
     pub fn is_null(&self) -> bool {
-        return self.frame == NULL_FRAME;
+        return self.frame.is_none();
     }
 
     /// Returns the value at the given index.
@@ -161,7 +160,7 @@ mod tests {
         assert_eq!(3, input.max_bytes);
         assert_eq!(4, input.max_players);
         assert_eq!(5, input.byte_size_of_all_input_for_all_players);
-        assert_eq!(0, input.frame);
+        assert_eq!(Some(0), input.frame);
         assert_eq!(get_empty_bits(input.max_bytes), input.bits);
     }
 
@@ -186,7 +185,7 @@ mod tests {
             byte_size_of_all_input_for_all_players,
         );
 
-        let frame = 2;
+        let frame = Some(2);
         let bits = None;
         let byte_size_of_all_input_for_all_players = 4;
 
@@ -212,7 +211,7 @@ mod tests {
             byte_size_of_all_input_for_all_players,
         );
 
-        let frame = 2;
+        let frame = Some(2);
         let bits = vec![true, false, true, false];
 
         let mut expected_bits = get_empty_bits(max_bytes);
@@ -245,7 +244,7 @@ mod tests {
             byte_size_of_all_input_for_all_players,
         );
 
-        let frame = 2;
+        let frame = Some(2);
         let bits = vec![true, false, true, false];
 
         let mut expected_bits = get_empty_bits(max_bytes);
@@ -273,7 +272,7 @@ mod tests {
         );
 
         let offset = 0;
-        let frame = 2;
+        let frame = Some(2);
         let bits = None;
         let byte_size_of_all_input_for_all_players = 3;
 
@@ -300,7 +299,7 @@ mod tests {
         );
 
         let offset = 0;
-        let frame = 2;
+        let frame = Some(2);
         let bits = vec![true, false, true, false];
 
         let mut expected_bits = get_empty_bits(max_bytes);
@@ -338,7 +337,7 @@ mod tests {
         );
 
         let offset = 2;
-        let frame = 2;
+        let frame = Some(2);
         let bits = None;
         let byte_size_of_all_input_for_all_players = 3;
 
@@ -365,7 +364,7 @@ mod tests {
         );
 
         let offset = 3;
-        let frame = 2;
+        let frame = Some(2);
         let bits = vec![true, false, true, false];
 
         let mut expected_bits = get_empty_bits(max_bytes);
@@ -403,7 +402,7 @@ mod tests {
         );
 
         let offset = 1;
-        let frame = 2;
+        let frame = Some(2);
         let bits = vec![true, false, true, false];
 
         let mut expected_bits = get_empty_bits(max_bytes);
@@ -441,7 +440,7 @@ mod tests {
             byte_size_of_all_input_for_all_players,
         );
 
-        let frame = 2;
+        let frame = Some(2);
         let bits = vec![true, false, true, false];
         let offset = 0;
 
@@ -475,7 +474,7 @@ mod tests {
         );
 
         let offset = 1;
-        let frame = 2;
+        let frame = Some(2);
         let bits = vec![true, false, true, false];
 
         let mut expected_bits = get_empty_bits(max_bytes);
@@ -511,7 +510,7 @@ mod tests {
         );
 
         let offset = 1;
-        let frame = NULL_FRAME;
+        let frame = None;
         let bits = vec![true, false, true, false];
 
         let mut expected_bits = get_empty_bits(max_bytes);
@@ -547,7 +546,7 @@ mod tests {
             byte_size_of_all_input_for_all_players,
         );
 
-        let frame = NULL_FRAME;
+        let frame = None;
         let bits = vec![true, false, false, false];
 
         let mut expected_bits = get_empty_bits(max_bytes);
@@ -577,7 +576,7 @@ mod tests {
             byte_size_of_all_input_for_all_players,
         );
 
-        let frame = NULL_FRAME;
+        let frame = None;
         let bits = vec![true, false, false, false, true];
 
         let mut expected_bits = get_empty_bits(max_bytes);
@@ -698,7 +697,7 @@ mod tests {
             byte_size_of_all_input_for_all_players,
         );
 
-        let frame = NULL_FRAME;
+        let frame = None;
         let bits = vec![true, false, false, false, true];
 
         let mut expected_bits = get_empty_bits(max_bytes);
@@ -725,11 +724,11 @@ mod tests {
         let bits = vec![true, false, false, false, true];
 
         input1.init(
-            2,
+            Some(2),
             Some(bits.clone()),
             byte_size_of_all_input_for_all_players,
         );
-        input2.init(3, Some(bits), byte_size_of_all_input_for_all_players);
+        input2.init(Some(3), Some(bits), byte_size_of_all_input_for_all_players);
 
         assert_eq!(true, input1.equal(&input2, true));
         assert_eq!(true, input2.equal(&input1, true));
@@ -747,8 +746,8 @@ mod tests {
         let bits1 = vec![true, false, false, false, true];
         let bits2 = vec![true, true, false, false, true];
 
-        input1.init(2, Some(bits1), byte_size_of_all_input_for_all_players);
-        input2.init(3, Some(bits2), byte_size_of_all_input_for_all_players);
+        input1.init(Some(2), Some(bits1), byte_size_of_all_input_for_all_players);
+        input2.init(Some(3), Some(bits2), byte_size_of_all_input_for_all_players);
 
         assert_eq!(false, input1.equal(&input2, true));
         assert_eq!(false, input2.equal(&input1, true));
@@ -765,11 +764,11 @@ mod tests {
         let bits = vec![true, false, false, false, true];
 
         input1.init(
-            2,
+            Some(2),
             Some(bits.clone()),
             byte_size_of_all_input_for_all_players,
         );
-        input2.init(2, Some(bits), byte_size_of_all_input_for_all_players);
+        input2.init(Some(2), Some(bits), byte_size_of_all_input_for_all_players);
 
         assert_eq!(true, input1.equal(&input2, false));
         assert_eq!(true, input2.equal(&input1, false));
@@ -786,11 +785,11 @@ mod tests {
         let bits = vec![true, false, false, false, true];
 
         input1.init(
-            2,
+            Some(2),
             Some(bits.clone()),
             byte_size_of_all_input_for_all_players,
         );
-        input2.init(3, Some(bits), byte_size_of_all_input_for_all_players);
+        input2.init(Some(3), Some(bits), byte_size_of_all_input_for_all_players);
 
         assert_eq!(false, input1.equal(&input2, false));
         assert_eq!(false, input2.equal(&input1, false));
@@ -807,8 +806,8 @@ mod tests {
         let bits1 = vec![true, false, false, false, true];
         let bits2 = vec![true, false, false, false, false];
 
-        input1.init(2, Some(bits1), byte_size_of_all_input_for_all_players);
-        input2.init(2, Some(bits2), byte_size_of_all_input_for_all_players);
+        input1.init(Some(2), Some(bits1), byte_size_of_all_input_for_all_players);
+        input2.init(Some(2), Some(bits2), byte_size_of_all_input_for_all_players);
 
         assert_eq!(false, input1.equal(&input2, false));
         assert_eq!(false, input2.equal(&input1, false));
@@ -824,8 +823,8 @@ mod tests {
 
         let bits = vec![true, false, false, false, true];
 
-        input1.init(2, Some(bits.clone()), 4);
-        input2.init(3, Some(bits), 3);
+        input1.init(Some(2), Some(bits.clone()), 4);
+        input2.init(Some(2), Some(bits), 3);
 
         assert_eq!(false, input1.equal(&input2, false));
         assert_eq!(false, input2.equal(&input1, false));
