@@ -1,6 +1,8 @@
 use crate::network;
 use network::bitvector::NIBBLE_SIZE;
 
+use crate::builder;
+
 use crate::utility;
 use utility::pow;
 
@@ -26,11 +28,10 @@ fn get_empty_bits(max_bytes: usize) -> Vec<bool> {
 
 impl GameInput {
     /// Initializes a new GameInput. Will panic if 2^NIBBLE_SIZE <= max_bytes * max_players * BITS_IN_BYTES.
-    pub fn new(
-        max_bytes: usize,
-        max_players: usize,
-        byte_size_of_all_input_for_all_players: usize,
-    ) -> Self {
+    pub fn new(builder: &builder::RBuilder, byte_size_of_all_input_for_all_players: usize) -> Self {
+        let max_bytes = builder.num_max_input_bytes;
+        let max_players = builder.num_players;
+
         if pow(2, NIBBLE_SIZE) <= (max_bytes * max_players * BITS_IN_BYTE) {
             panic!("ERROR ALLOCATING MEMORY"); //TODO: expand on why this is bad
         }
@@ -127,9 +128,9 @@ impl GameInput {
     /// Return whether the inputs are equal. If bits_only is set, just compares the bits.
     pub fn equal(&self, input: &GameInput, bits_only: bool) -> bool {
         let frames_match = self.frame == input.frame;
-        if !bits_only && !frames_match {
-            // FRAMES DON'T MATCH
-        }
+        // if !bits_only && !frames_match {
+        //     // FRAMES DON'T MATCH
+        // }
 
         let sizes_match = self.byte_size_of_all_input_for_all_players
             == input.byte_size_of_all_input_for_all_players;
@@ -152,10 +153,17 @@ impl GameInput {
 mod tests {
     use super::*;
 
+    fn builder(max_bytes: usize, num_players: usize) -> builder::RBuilder {
+        return builder::RBuilder {
+            num_players: num_players,
+            num_max_input_bytes: max_bytes,
+        };
+    }
+
     // new tests
     #[test]
     fn game_input_new_sets_proper_values() {
-        let input = GameInput::new(3, 4, 5);
+        let input = GameInput::new(&builder(3, 4), 5);
 
         assert_eq!(3, input.max_bytes);
         assert_eq!(4, input.max_players);
@@ -167,7 +175,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn game_input_new_panics_with_bad_values() {
-        let input = GameInput::new(99, 9, 5);
+        let input = GameInput::new(&builder(99, 9), 5);
 
         assert_eq!(true, true);
     }
@@ -180,8 +188,7 @@ mod tests {
         let byte_size_of_all_input_for_all_players = 3;
 
         let mut input = GameInput::new(
-            max_bytes,
-            max_players,
+            &builder(max_bytes, max_players),
             byte_size_of_all_input_for_all_players,
         );
 
@@ -206,8 +213,7 @@ mod tests {
         let byte_size_of_all_input_for_all_players = 3;
 
         let mut input = GameInput::new(
-            max_bytes,
-            max_players,
+            &builder(max_bytes, max_players),
             byte_size_of_all_input_for_all_players,
         );
 
@@ -239,8 +245,7 @@ mod tests {
         let byte_size_of_all_input_for_all_players = 3;
 
         let mut input = GameInput::new(
-            max_bytes,
-            max_players,
+            &builder(max_bytes, max_players),
             byte_size_of_all_input_for_all_players,
         );
 
@@ -266,8 +271,7 @@ mod tests {
         let byte_size_of_all_input_for_all_players = 2;
 
         let mut input = GameInput::new(
-            max_bytes,
-            max_players,
+            &builder(max_bytes, max_players),
             byte_size_of_all_input_for_all_players,
         );
 
@@ -293,8 +297,7 @@ mod tests {
         let byte_size_of_all_input_for_all_players = 2;
 
         let mut input = GameInput::new(
-            max_bytes,
-            max_players,
+            &builder(max_bytes, max_players),
             byte_size_of_all_input_for_all_players,
         );
 
@@ -331,8 +334,7 @@ mod tests {
         let byte_size_of_all_input_for_all_players = 2;
 
         let mut input = GameInput::new(
-            max_bytes,
-            max_players,
+            &builder(max_bytes, max_players),
             byte_size_of_all_input_for_all_players,
         );
 
@@ -358,8 +360,7 @@ mod tests {
         let byte_size_of_all_input_for_all_players = 5;
 
         let mut input = GameInput::new(
-            max_bytes,
-            max_players,
+            &builder(max_bytes, max_players),
             byte_size_of_all_input_for_all_players,
         );
 
@@ -396,8 +397,7 @@ mod tests {
         let byte_size_of_all_input_for_all_players = 5;
 
         let mut input = GameInput::new(
-            max_bytes,
-            max_players,
+            &builder(max_bytes, max_players),
             byte_size_of_all_input_for_all_players,
         );
 
@@ -435,8 +435,7 @@ mod tests {
         let byte_size_of_all_input_for_all_players = 3;
 
         let mut input = GameInput::new(
-            max_bytes,
-            max_players,
+            &builder(max_bytes, max_players),
             byte_size_of_all_input_for_all_players,
         );
 
@@ -468,8 +467,7 @@ mod tests {
         let byte_size_of_all_input_for_all_players = 5;
 
         let mut input = GameInput::new(
-            max_bytes,
-            max_players,
+            &builder(max_bytes, max_players),
             byte_size_of_all_input_for_all_players,
         );
 
@@ -504,8 +502,7 @@ mod tests {
         let byte_size_of_all_input_for_all_players = 5;
 
         let mut input = GameInput::new(
-            max_bytes,
-            max_players,
+            &builder(max_bytes, max_players),
             byte_size_of_all_input_for_all_players,
         );
 
@@ -541,8 +538,7 @@ mod tests {
         let byte_size_of_all_input_for_all_players = 5;
 
         let mut input = GameInput::new(
-            max_bytes,
-            max_players,
+            &builder(max_bytes, max_players),
             byte_size_of_all_input_for_all_players,
         );
 
@@ -571,8 +567,7 @@ mod tests {
         let byte_size_of_all_input_for_all_players = 5;
 
         let mut input = GameInput::new(
-            max_bytes,
-            max_players,
+            &builder(max_bytes, max_players),
             byte_size_of_all_input_for_all_players,
         );
 
@@ -602,8 +597,7 @@ mod tests {
         let byte_size_of_all_input_for_all_players = 5;
 
         let mut input = GameInput::new(
-            max_bytes,
-            max_players,
+            &builder(max_bytes, max_players),
             byte_size_of_all_input_for_all_players,
         );
 
@@ -624,8 +618,7 @@ mod tests {
         let byte_size_of_all_input_for_all_players = 5;
 
         let mut input = GameInput::new(
-            max_bytes,
-            max_players,
+            &builder(max_bytes, max_players),
             byte_size_of_all_input_for_all_players,
         );
 
@@ -647,8 +640,7 @@ mod tests {
         let byte_size_of_all_input_for_all_players = 5;
 
         let mut input = GameInput::new(
-            max_bytes,
-            max_players,
+            &builder(max_bytes, max_players),
             byte_size_of_all_input_for_all_players,
         );
 
@@ -669,8 +661,7 @@ mod tests {
         let byte_size_of_all_input_for_all_players = 5;
 
         let mut input = GameInput::new(
-            max_bytes,
-            max_players,
+            &builder(max_bytes, max_players),
             byte_size_of_all_input_for_all_players,
         );
 
@@ -692,8 +683,7 @@ mod tests {
         let byte_size_of_all_input_for_all_players = 5;
 
         let mut input = GameInput::new(
-            max_bytes,
-            max_players,
+            &builder(max_bytes, max_players),
             byte_size_of_all_input_for_all_players,
         );
 
@@ -717,9 +707,8 @@ mod tests {
         let max_bytes = 5;
         let byte_size_of_all_input_for_all_players = 5;
 
-        let mut input1 = GameInput::new(max_bytes, 2, 4);
-
-        let mut input2 = GameInput::new(max_bytes, 3, 5);
+        let mut input1 = GameInput::new(&builder(max_bytes, 2), 4);
+        let mut input2 = GameInput::new(&builder(max_bytes, 3), 5);
 
         let bits = vec![true, false, false, false, true];
 
@@ -739,9 +728,8 @@ mod tests {
         let max_bytes = 5;
         let byte_size_of_all_input_for_all_players = 5;
 
-        let mut input1 = GameInput::new(max_bytes, 2, 4);
-
-        let mut input2 = GameInput::new(max_bytes, 3, 5);
+        let mut input1 = GameInput::new(&builder(max_bytes, 2), 4);
+        let mut input2 = GameInput::new(&builder(max_bytes, 3), 5);
 
         let bits1 = vec![true, false, false, false, true];
         let bits2 = vec![true, true, false, false, true];
@@ -758,8 +746,8 @@ mod tests {
         let max_bytes = 5;
         let byte_size_of_all_input_for_all_players = 5;
 
-        let mut input1 = GameInput::new(max_bytes, 2, 5);
-        let mut input2 = GameInput::new(max_bytes, 3, 5);
+        let mut input1 = GameInput::new(&builder(max_bytes, 2), 5);
+        let mut input2 = GameInput::new(&builder(max_bytes, 3), 5);
 
         let bits = vec![true, false, false, false, true];
 
@@ -779,8 +767,8 @@ mod tests {
         let max_bytes = 5;
         let byte_size_of_all_input_for_all_players = 5;
 
-        let mut input1 = GameInput::new(max_bytes, 2, 5);
-        let mut input2 = GameInput::new(max_bytes, 3, 5);
+        let mut input1 = GameInput::new(&builder(max_bytes, 2), 5);
+        let mut input2 = GameInput::new(&builder(max_bytes, 3), 5);
 
         let bits = vec![true, false, false, false, true];
 
@@ -800,8 +788,8 @@ mod tests {
         let max_bytes = 5;
         let byte_size_of_all_input_for_all_players = 5;
 
-        let mut input1 = GameInput::new(max_bytes, 2, 5);
-        let mut input2 = GameInput::new(max_bytes, 3, 5);
+        let mut input1 = GameInput::new(&builder(max_bytes, 2), 5);
+        let mut input2 = GameInput::new(&builder(max_bytes, 3), 5);
 
         let bits1 = vec![true, false, false, false, true];
         let bits2 = vec![true, false, false, false, false];
@@ -818,8 +806,8 @@ mod tests {
         let max_bytes = 5;
         let byte_size_of_all_input_for_all_players = 5;
 
-        let mut input1 = GameInput::new(max_bytes, 2, 5);
-        let mut input2 = GameInput::new(max_bytes, 3, 5);
+        let mut input1 = GameInput::new(&builder(max_bytes, 2), 5);
+        let mut input2 = GameInput::new(&builder(max_bytes, 3), 5);
 
         let bits = vec![true, false, false, false, true];
 

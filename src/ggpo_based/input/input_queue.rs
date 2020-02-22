@@ -1,6 +1,8 @@
 use super::game_input;
 use game_input::GameInput;
 
+use crate::builder;
+
 const DEFAULT_INPUT_QUEUE_LENGTH: usize = 128;
 const DEFAULT_INPUT_SIZE: usize = 4;
 
@@ -9,6 +11,9 @@ pub struct InputQueue {
     head: usize,
     tail: usize,
     length: usize,
+    queue_length: usize,
+    default_input_size: usize,
+
     input_size: usize,
     first_frame: bool,
     last_user_added_frame: Option<usize>,
@@ -21,11 +26,31 @@ pub struct InputQueue {
 }
 
 impl InputQueue {
-    pub fn new(default_input_size: Option<usize>, default_queue_length: Option<usize>) -> Self {
+    pub fn new(
+        builder: &builder::RBuilder,
+        default_input_size: Option<usize>,
+        default_queue_length: Option<usize>,
+    ) -> Self {
         let default_input_size = default_input_size.unwrap_or(DEFAULT_INPUT_SIZE);
         let default_queue_length = default_queue_length.unwrap_or(DEFAULT_INPUT_QUEUE_LENGTH);
 
-        unimplemented!();
+        return Self {
+            default_input_size: default_input_size,
+            input_size: default_input_size,
+            queue_length: default_queue_length,
+            id: None,
+            head: 0,
+            tail: 0,
+            length: 0,
+            frame_delay: 0,
+            first_frame: true,
+            last_user_added_frame: None,
+            last_added_frame: None,
+            first_incorrect_frame: None,
+            last_frame_requested: None,
+            inputs: vec![],
+            prediction: GameInput::new(&builder, default_input_size),
+        };
     }
 
     pub fn init(&mut self, id: usize, input_size: usize) {
@@ -48,7 +73,6 @@ impl InputQueue {
     pub fn get_last_confirmed_frame(&self) -> Option<usize> {
         return self.last_added_frame;
     }
-
     pub fn get_first_incorrect_frame(&self) -> Option<usize> {
         return self.first_incorrect_frame;
     }
