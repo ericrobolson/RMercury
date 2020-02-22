@@ -9,4 +9,16 @@ version = "0.33.0"
 features = ["bundled"]
 
 [[example]]
-name = "basic"
+name = "pong"
+
+[[example]]
+name = "pong_spectator"
+
+[[example]]
+name = "pong_sync_test"
+
+[[example]]
+name = "pong_replay"
+
+[[example]]
+name = "pong_packet_loss"

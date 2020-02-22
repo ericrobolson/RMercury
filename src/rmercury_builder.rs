@@ -6,6 +6,7 @@ pub struct RMercuryBuilder<'a, TGameInterface, TGameInput, TGameState>
 where
     TGameInterface: RMercuryGameInterface<TGameState, TGameInput>,
     TGameInput: RMercuryInput,
+    TGameInput: Copy,
 {
     /// The type of session to build
     m_type: MercuryType,
@@ -17,7 +18,9 @@ where
     local_input_delay: usize,
     /// The number of times to advance the game per second    
     sim_executions_per_second: usize,
+    /// The game interface RMercury will interact with.
     game_interface: &'a TGameInterface,
+    /// Whether the builder was consumed or not.
     was_built: bool,
     phantom_input: PhantomData<&'a TGameInput>,
     phantom_state: PhantomData<TGameState>,
@@ -33,6 +36,7 @@ impl<'a, TGameInterface, TGameInput, TGameState>
 where
     TGameInterface: RMercuryGameInterface<TGameState, TGameInput>,
     TGameInput: RMercuryInput,
+    TGameInput: Copy,
 {
     /// Create a new RMercuryBuilder to initialize the network settings.
     pub fn new(game_interface: &'a TGameInterface) -> Self {
