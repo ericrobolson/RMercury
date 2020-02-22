@@ -76,7 +76,7 @@ where
         return self;
     }
 
-    /// Sets the number of frames to execute per second for the simulation.
+    /// Sets the number of frames to execute per second for the simulation. Minimum of 1.
     pub fn with_sim_executions_per_second(mut self, hz: usize) -> Self {
         if hz > 0 {
             self.sim_executions_per_second = hz;

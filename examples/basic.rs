@@ -25,11 +25,18 @@ impl RMercuryGameInterface<GameState, GameInput> for GameInterface {
 }
 
 struct GameInput {}
+
+impl GameInput {
+    pub fn from_action(action: Actions) -> Self {
+        return Self {};
+    }
+}
+
 impl RMercuryInput for GameInput {
-    fn to_bytes(&self) -> std::vec::Vec<u8> {
+    fn to_bits(&self) -> std::vec::Vec<u8> {
         unimplemented!()
     }
-    fn from_bytes(_: std::vec::Vec<u8>) -> Self {
+    fn from_bits(_: std::vec::Vec<u8>) -> Self {
         unimplemented!()
     }
 }
@@ -65,8 +72,12 @@ fn main() {
                 }
             }
 
-            r_mercury.log_local_input(vec![]);
+            let mut player_input = player_actions
+                .iter()
+                .map(|i| GameInput::from_action(*i))
+                .collect();
 
+            r_mercury.add_local_input(&mut player_input);
             r_mercury.execute();
 
             let current_state = r_mercury.get_game_state();
@@ -91,6 +102,7 @@ fn render(canvas: &mut sdl2::render::Canvas<sdl2::video::Window>, game_state: &G
     canvas.present();
 }
 
+#[derive(Copy, Clone, Debug)]
 enum Actions {
     MoveUp,
     MoveDown,

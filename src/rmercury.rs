@@ -16,6 +16,7 @@ pub enum MercuryType {
     PacketLoss,
 }
 
+/// RMercury session object. This is the interface that your main loop must use.
 pub struct RMercury<'a, TGameInterface, TGameInput, TGameState>
 where
     TGameInterface: RMercuryGameInterface<TGameState, TGameInput>,
@@ -28,6 +29,7 @@ where
     local_input_frame_delay: usize,
     game_interface: &'a TGameInterface,
     inputs: Vec<TGameInput>,
+    current_local_inputs: Vec<TGameInput>,
     phantom_state: PhantomData<TGameState>,
 }
 
@@ -37,6 +39,7 @@ where
     TGameInterface: RMercuryGameInterface<TGameState, TGameInput>,
     TGameInput: RMercuryInput,
 {
+    /// Initialize a new RMercury session.
     pub fn new(
         m_type: MercuryType,
         num_players: usize,
@@ -53,21 +56,28 @@ where
             local_input_frame_delay: local_input_frame_delay,
             game_interface: game_interface,
             inputs: vec![],
+            current_local_inputs: vec![],
             phantom_state: PhantomData,
         };
     }
 
-    pub fn log_local_input(&mut self, inputs: Vec<TGameInput>) {
-        unimplemented!();
+    /// Add the local player's input to the queue.
+    pub fn add_local_input(&mut self, inputs: &mut Vec<TGameInput>) {
+        self.current_local_inputs.append(inputs);
     }
+
+    /// Execute RMercury. If enough time has passed, will execute the simulation. Otherwise will process outstanding network operations.
     pub fn execute(&mut self) {
+        //TODO: move local inputs to input queue, then clear queued local inputs
         unimplemented!();
     }
 
+    /// Retrieve the current game state. Used for non-simulation purposes, such as audio or rendering.
     pub fn get_game_state(&self) -> TGameState {
         return self.game_interface.current_game_state();
     }
 
+    /// Get a reference to the game interface.
     pub fn game_interface(&self) -> &TGameInterface {
         return self.game_interface;
     }
