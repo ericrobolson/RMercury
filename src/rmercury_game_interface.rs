@@ -1,8 +1,5 @@
 /// The trait your game simulation must implement to interface with RMercury.
 pub trait RMercuryGameInterface<TGameState, TGameInput> {
-    /// Returns the current game state.
-    fn save_game_state(&self) -> TGameState;
-
     /// Loads the current game state.
     fn load_game_state(&mut self, game_state: TGameState);
 

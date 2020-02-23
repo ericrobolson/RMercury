@@ -19,7 +19,7 @@ where
     /// The number of times to advance the game per second    
     sim_executions_per_second: usize,
     /// The game interface RMercury will interact with.
-    game_interface: &'a TGameInterface,
+    game_interface: &'a mut TGameInterface,
     /// Whether the builder was consumed or not.
     was_built: bool,
     phantom_input: PhantomData<&'a TGameInput>,
@@ -39,7 +39,7 @@ where
     TGameInput: Copy,
 {
     /// Create a new RMercuryBuilder to initialize the network settings.
-    pub fn new(game_interface: &'a TGameInterface) -> Self {
+    pub fn new(game_interface: &'a mut TGameInterface) -> Self {
         return Self {
             m_type: MercuryType::Peer2Peer,
             number_of_players: DEFAULT_NUM_PLAYERS,

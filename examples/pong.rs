@@ -9,10 +9,11 @@ fn main() {
     let mut pong_gfx = PongGfx::new();
 
     // Init RMercury
-    let game_interface = GameInterface::new();
+    let mut game_interface = GameInterface::new();
 
-    let mut builder = RMercuryBuilder::<GameInterface, GameInput, GameState>::new(&game_interface)
-        .with_type(MercuryType::Peer2Peer);
+    let mut builder =
+        RMercuryBuilder::<GameInterface, GameInput, GameState>::new(&mut game_interface)
+            .with_type(MercuryType::Peer2Peer);
 
     let mut r_mercury = builder.build();
 

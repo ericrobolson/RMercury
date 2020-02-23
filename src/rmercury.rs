@@ -1,5 +1,8 @@
 use super::*;
 
+use time::{Duration, Instant};
+const MILLISECONDS_IN_SECOND: u64 = 1000;
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 /// The various states a RMercury session can be run in.
 pub enum MercuryType {
@@ -27,10 +30,12 @@ where
     max_spectators: usize,
     sim_executions_per_second: usize,
     local_input_frame_delay: usize,
-    game_interface: &'a TGameInterface,
+    game_interface: &'a mut TGameInterface,
     current_frame: usize,
     inputs: Vec<RMercuryInputWrapper<TGameInput>>,
     last_confirmed_game_state: TGameState,
+    frame_duration: time::Duration,
+    last_frame_execution: time::Instant,
 }
 
 impl<'a, TGameInterface, TGameInput, TGameState>
@@ -47,9 +52,15 @@ where
         max_spectators: usize,
         sim_executions_per_second: usize,
         local_input_frame_delay: usize,
-        game_interface: &'a TGameInterface,
+        game_interface: &'a mut TGameInterface,
     ) -> Self {
-        let initial_game_state = game_interface.save_game_state();
+        let initial_game_state = game_interface.current_game_state();
+
+        let frame_duration = Duration::milliseconds(
+            MILLISECONDS_IN_SECOND as i64 / sim_executions_per_second as i64,
+        );
+
+        let start = Instant::now();
 
         return Self {
             m_type: m_type,
@@ -61,16 +72,19 @@ where
             inputs: vec![],
             current_frame: 0,
             last_confirmed_game_state: initial_game_state,
+            frame_duration: frame_duration,
+            last_frame_execution: start,
         };
     }
 
     pub fn get_local_player_id(&self) -> usize {
-        unimplemented!();
+        //TODO: implement
+        return 1;
     }
 
     /// Add the local player's input to the queue.
     pub fn add_local_input(&mut self, inputs: &mut Vec<TGameInput>) {
-        let frame = self.current_frame + self.local_input_frame_delay;
+        let frame_to_execute = self.current_frame + self.local_input_frame_delay;
         let local_player_id = self.get_local_player_id();
 
         let mut wrapped_inputs: Vec<RMercuryInputWrapper<TGameInput>> = inputs
@@ -80,7 +94,7 @@ where
                 let mut input = i.clone();
                 input.set_player_id(local_player_id);
 
-                let wrapped_input = RMercuryInputWrapper::new(input, frame);
+                let wrapped_input = RMercuryInputWrapper::new(input, frame_to_execute);
 
                 return wrapped_input;
             })
@@ -91,7 +105,23 @@ where
 
     /// Execute RMercury. If enough time has passed, will execute the simulation. Otherwise will process outstanding network operations.
     pub fn execute(&mut self) {
-        unimplemented!();
+        let now = self.last_frame_execution - Instant::now();
+        let run_game_sim = self.frame_duration <= now;
+
+        if run_game_sim {
+            let current_frame_inputs = self
+                .inputs
+                .iter()
+                .filter(|x| x.frame == self.current_frame)
+                .map(|x| x.input)
+                .collect();
+
+            self.game_interface.advance_frame(current_frame_inputs);
+
+            // TODO: optimization: take all previously confirmed inputs, and persist to disk?
+            self.current_frame += 1;
+            self.last_frame_execution = Instant::now();
+        }
     }
 
     /// Retrieve the current game state. Used for non-simulation purposes, such as audio or rendering.
@@ -105,7 +135,7 @@ where
     TGameInput: RMercuryInput,
 {
     /// The input to execute
-    input: TGameInput,
+    pub input: TGameInput,
     /// The frame the input will be executed for
     frame: usize,
 }
