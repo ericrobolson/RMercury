@@ -18,6 +18,12 @@ pub enum MercuryType {
     PacketLoss,
 }
 
+/// Enumeration for the results from the execute method.
+pub enum RMercuryExecutionResults {
+    NotExecuted,
+    Executed,
+}
+
 /// RMercury session object. This is the interface that your main loop must use.
 pub struct RMercury<'a, TGameInterface, TGameInput, TGameState>
 where
@@ -104,7 +110,7 @@ where
     }
 
     /// Execute RMercury. If enough time has passed, will execute the simulation. Otherwise will process outstanding network operations.
-    pub fn execute(&mut self) {
+    pub fn execute(&mut self) -> RMercuryExecutionResults {
         let now = self.last_frame_execution - Instant::now();
         let run_game_sim = self.frame_duration <= now;
 
@@ -121,7 +127,16 @@ where
             // TODO: optimization: take all previously confirmed inputs, and persist to disk?
             self.current_frame += 1;
             self.last_frame_execution = Instant::now();
+
+            return RMercuryExecutionResults::Executed;
         }
+
+        return RMercuryExecutionResults::NotExecuted;
+    }
+
+    /// Get the current game tick.
+    pub fn get_current_tick(&self) -> usize {
+        return self.current_frame;
     }
 
     /// Retrieve the current game state. Used for non-simulation purposes, such as audio or rendering.
