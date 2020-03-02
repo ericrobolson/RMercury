@@ -19,6 +19,7 @@ pub enum MercuryType {
 }
 
 /// Enumeration for the results from the execute method.
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum RMercuryExecutionResults {
     NotExecuted,
     Executed,
