@@ -110,10 +110,17 @@ where
         self.inputs.append(&mut wrapped_inputs);
     }
 
-    /// Execute RMercury. If enough time has passed, will execute the simulation. Otherwise will process outstanding network operations.
-    pub fn execute(&mut self) -> RMercuryExecutionResults {
+    /// Whether RMecury is ready to execute. When true, ready to sync inputs and execute.
+    pub fn ready_to_run(&self) -> bool {
         let now = self.last_frame_execution - Instant::now();
         let run_game_sim = self.frame_duration <= now;
+
+        return run_game_sim;
+    }
+
+    /// Execute RMercury. If enough time has passed, will execute the simulation. Otherwise will process outstanding network operations.
+    pub fn execute(&mut self) -> RMercuryExecutionResults {
+        let run_game_sim = self.ready_to_run();
 
         if run_game_sim {
             let current_frame_inputs = self
