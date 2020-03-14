@@ -1,5 +1,6 @@
 mod rmercury;
 mod rmercury_builder;
+mod rmercury_channel;
 mod rmercury_game_interface;
 mod rmercury_input;
 

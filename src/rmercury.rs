@@ -1,5 +1,7 @@
 use super::*;
 
+use rmercury_channel::RChannelManager;
+
 use time::{Duration, Instant};
 const MILLISECONDS_IN_SECOND: u64 = 1000;
 
@@ -43,6 +45,7 @@ where
     last_confirmed_game_state: TGameState,
     frame_duration: time::Duration,
     last_frame_execution: time::Instant,
+    channel_manager: RChannelManager,
 }
 
 impl<'a, TGameInterface, TGameInput, TGameState>
@@ -81,12 +84,23 @@ where
             last_confirmed_game_state: initial_game_state,
             frame_duration: frame_duration,
             last_frame_execution: start,
+            channel_manager: RChannelManager::new(),
         };
     }
 
     pub fn get_local_player_id(&self) -> usize {
         //TODO: implement
         return 1;
+    }
+
+    /// Get a mutable reference to the game interface.
+    pub fn get_game_interface_mut(&mut self) -> &mut TGameInterface {
+        return self.game_interface;
+    }
+
+    /// Get a non-mutable reference to the game interface.
+    pub fn get_game_interface(&self) -> &TGameInterface {
+        return self.game_interface;
     }
 
     /// Add the local player's input to the queue.
@@ -108,9 +122,11 @@ where
             .collect();
 
         self.inputs.append(&mut wrapped_inputs);
+
+        self.channel_manager.queue_local_input();
     }
 
-    /// Whether RMecury is ready to execute. When true, ready to sync inputs and execute.
+    /// Whether RMercury is ready to execute. When true, ready to sync inputs and execute.
     pub fn ready_to_run(&self) -> bool {
         let now = self.last_frame_execution - Instant::now();
         let run_game_sim = self.frame_duration <= now;
@@ -120,6 +136,9 @@ where
 
     /// Execute RMercury. If enough time has passed, will execute the simulation. Otherwise will process outstanding network operations.
     pub fn execute(&mut self) -> RMercuryExecutionResults {
+        // Sync up network
+        self.channel_manager.execute();
+
         let run_game_sim = self.ready_to_run();
 
         if run_game_sim {
