@@ -7,6 +7,8 @@ where
     TGameInterface: RMercuryGameInterface<TGameState, TGameInput>,
     TGameInput: RMercuryInput,
     TGameInput: Copy,
+    TGameInput: PartialEq,
+    TGameState: Copy,
 {
     /// The type of session to build
     m_type: MercuryType,
@@ -37,6 +39,8 @@ where
     TGameInterface: RMercuryGameInterface<TGameState, TGameInput>,
     TGameInput: RMercuryInput,
     TGameInput: Copy,
+    TGameInput: PartialEq,
+    TGameState: Copy,
 {
     /// Create a new RMercuryBuilder to initialize the network settings.
     pub fn new(game_interface: &'a mut TGameInterface) -> Self {

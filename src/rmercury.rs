@@ -1,7 +1,7 @@
 use super::*;
 
 use rmercury_channel::RChannelManager;
-
+use rmercury_input::{RMercuryInput, RMercuryInputWrapper};
 use time::{Duration, Instant};
 const MILLISECONDS_IN_SECOND: u64 = 1000;
 
@@ -31,8 +31,10 @@ pub enum RMercuryExecutionResults {
 pub struct RMercury<'a, TGameInterface, TGameInput, TGameState>
 where
     TGameInterface: RMercuryGameInterface<TGameState, TGameInput>,
+    TGameState: Copy,
     TGameInput: RMercuryInput,
     TGameInput: Copy,
+    TGameInput: PartialEq,
 {
     pub m_type: MercuryType,
     number_of_players: usize,
@@ -43,9 +45,10 @@ where
     current_frame: usize,
     inputs: Vec<RMercuryInputWrapper<TGameInput>>,
     last_confirmed_game_state: TGameState,
+    last_confirmed_frame: usize,
     frame_duration: time::Duration,
     last_frame_execution: time::Instant,
-    channel_manager: RChannelManager,
+    channel_manager: RChannelManager<TGameInput>,
 }
 
 impl<'a, TGameInterface, TGameInput, TGameState>
@@ -54,6 +57,8 @@ where
     TGameInterface: RMercuryGameInterface<TGameState, TGameInput>,
     TGameInput: RMercuryInput,
     TGameInput: Copy,
+    TGameInput: PartialEq,
+    TGameState: Copy,
 {
     /// Initialize a new RMercury session.
     pub fn new(
@@ -81,6 +86,7 @@ where
             game_interface: game_interface,
             inputs: vec![],
             current_frame: 0,
+            last_confirmed_frame: 0,
             last_confirmed_game_state: initial_game_state,
             frame_duration: frame_duration,
             last_frame_execution: start,
@@ -89,7 +95,7 @@ where
     }
 
     pub fn get_local_player_id(&self) -> usize {
-        //TODO: implement
+        //TODO: implement based on connection time. E.g. if one player creates the host first, they get first character.
         return 1;
     }
 
@@ -121,9 +127,9 @@ where
             })
             .collect();
 
-        self.inputs.append(&mut wrapped_inputs);
+        self.channel_manager.queue_local_input(&wrapped_inputs);
 
-        self.channel_manager.queue_local_input();
+        self.inputs.append(&mut wrapped_inputs);
     }
 
     /// Whether RMercury is ready to execute. When true, ready to sync inputs and execute.
@@ -137,11 +143,53 @@ where
     /// Execute RMercury. If enough time has passed, will execute the simulation. Otherwise will process outstanding network operations.
     pub fn execute(&mut self) -> RMercuryExecutionResults {
         // Sync up network
-        self.channel_manager.execute();
+        let should_rollback;
+        {
+            let mut remote_inputs = self.channel_manager.execute();
+            remote_inputs.sort_by(|a, b| b.frame.cmp(&a.frame));
+
+            let earliest_received_input = remote_inputs.first();
+
+            if earliest_received_input.is_some() {
+                let earliest_received_input = earliest_received_input.unwrap();
+                should_rollback = earliest_received_input.frame < self.current_frame;
+            } else {
+                should_rollback = false;
+            }
+
+            self.inputs.append(&mut remote_inputs);
+            self.inputs.sort_by(|a, b| b.frame.cmp(&a.frame));
+            self.inputs.dedup();
+        }
 
         let run_game_sim = self.ready_to_run();
 
         if run_game_sim {
+            if should_rollback {
+                self.game_interface
+                    .load_game_state(self.last_confirmed_game_state.clone());
+
+                let mut rollback_frame = self.last_confirmed_frame;
+                while rollback_frame < self.current_frame {
+                    let current_frame_inputs = self
+                        .inputs
+                        .iter()
+                        .filter(|x| x.frame == rollback_frame)
+                        .map(|x| x.input)
+                        .collect();
+
+                    self.game_interface.advance_frame(current_frame_inputs);
+
+                    if rollback_frame == self.channel_manager.last_confirmed_frame() {
+                        // Save the confirmed frame
+                        let game_state = self.game_interface.current_game_state();
+                        self.last_confirmed_game_state = game_state;
+                    }
+
+                    rollback_frame += 1;
+                }
+            }
+
             let current_frame_inputs = self
                 .inputs
                 .iter()
@@ -169,27 +217,5 @@ where
     /// Retrieve the current game state. Used for non-simulation purposes, such as audio or rendering.
     pub fn get_game_state(&self) -> TGameState {
         return self.game_interface.current_game_state();
-    }
-}
-
-struct RMercuryInputWrapper<TGameInput>
-where
-    TGameInput: RMercuryInput,
-{
-    /// The input to execute
-    pub input: TGameInput,
-    /// The frame the input will be executed for
-    frame: usize,
-}
-
-impl<TGameInput> RMercuryInputWrapper<TGameInput>
-where
-    TGameInput: RMercuryInput,
-{
-    pub fn new(input: TGameInput, frame: usize) -> Self {
-        return Self {
-            frame: frame,
-            input: input,
-        };
     }
 }

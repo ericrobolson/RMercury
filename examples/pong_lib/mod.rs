@@ -259,7 +259,7 @@ pub struct GameState {
     pub ball_velocity: Coordinate,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct GameInput {
     pub action: Actions,
     player_id: usize,
